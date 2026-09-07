@@ -3,8 +3,12 @@ Fase 1 - transforma o RouterBench bruto (routerbench_0shot.pkl) num CSV de
 trabalho com uma linha por pergunta, comparando o modelo pequeno
 (gpt-3.5-turbo-1106) e o grande (gpt-4-1106-preview).
 
-Decisões tomadas com a usuária (ver conversa da Fase 1):
-- Acerto = score == 1.0 (critério rigoroso; scores fracionários contam como erro)
+Decisões tomadas com a usuária (ver conversa das Fases 1 e 2):
+- Acerto = score >= 0.5 (revisado na Fase 2: o critério original score == 1.0
+  zerava artificialmente a taxa de acerto em gsm8k, porque a métrica de pontuação
+  dessa categoria raramente atinge exatamente 1.0, mesmo em respostas corretas.
+  Com >= 0.5, mmlu/hellaswag/arc-challenge/winogrande/mbpp não mudam nada, porque
+  já são binárias (0.0 ou 1.0); só gsm8k e mtbench são corrigidas.)
 - Subtópicos do MMLU e do MT-Bench são agrupados numa única categoria cada
 - Categorias fora da lista oficial do paper (tarefas em chinês, consensus_summary,
   bias_detection, abstract2title, accounting_audit, test-match) são descartadas
@@ -61,9 +65,10 @@ def processar():
     # 3. desserializar o texto da pergunta
     df["pergunta"] = df["prompt"].apply(extrair_texto_pergunta)
 
-    # 4. acerto binário: só conta como acerto se o score for exatamente 1.0
-    df["acerto_pequeno"] = (df[MODELO_PEQUENO] == 1.0).astype(int)
-    df["acerto_grande"] = (df[MODELO_GRANDE] == 1.0).astype(int)
+    # 4. acerto binário: conta como acerto se o score for >= 0.5
+    # (score == 1.0 zerava gsm8k artificialmente; ver decisão da Fase 2)
+    df["acerto_pequeno"] = (df[MODELO_PEQUENO] >= 0.5).astype(int)
+    df["acerto_grande"] = (df[MODELO_GRANDE] >= 0.5).astype(int)
 
     # 5. custos (em dólares, calculados a partir de tabela de preço público)
     df["custo_pequeno"] = df[f"{MODELO_PEQUENO}|total_cost"]
