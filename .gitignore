@@ -1,0 +1,20 @@
+# Ambiente virtual
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Chaves de API e variáveis sensíveis
+.env
+
+# Dados brutos (grandes, não versionar — baixados via script)
+dados/bruto/*
+!dados/bruto/.gitkeep
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
